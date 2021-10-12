@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="format-detection" content="telephone=no">
+	<script>
+		let wsock = null;
+
+		addEventListener('load', () => {
+			const host = '192.168.0.1';
+			const port = 0x6563;
+			const appname = 'echo';
+			const protocols = ['echo'];
+
+			wsock = (function () {
+				const uri = `ws://${host}:${port}/${appname}/`;
+				const ws = new WebSocket(uri, protocols);
+				if (!ws) {
+					alert("Can't use WebSocket in your browser.");
+					return null;
+				}
+				ws.onopen = start;
+				ws.onmessage = recieve;
+				ws.onerror = () => console.error('No response from the server.');
+				ws.onclose = e => {
+					var msg = e.reason.length ? e.reason : 'close';
+					console.error(`${msg}[${e.code}]`);
+				};
+				return ws;
+			})();
+		});
+
+		addEventListener('unload', () => {
+			if (wsock)
+				wsock.close();
+		});
+
+		function start() {
+			console.log('start');
+			setTimeout(loop, 1000);
+		}
+
+		function recieve(recvData) {
+			console.log(recvData.data);
+		}
+
+		function loop() {
+			if (wsock.readyState == WebSocket.OPEN)
+				wsock.send('' + Date.now());
+			setTimeout(loop, 1000);
+		}
+	</script>
+	<title>sample echo server</title>
+</head>
+
+<body>
+	Look at the console window!
+</body>
+
+</html>
